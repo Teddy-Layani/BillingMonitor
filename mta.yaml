@@ -1,0 +1,80 @@
+_schema-version: "3.2"
+ID: BillingMonitor
+version: 0.0.1
+modules:
+- name: BillingMonitor-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: BillingMonitor-destination-service
+    parameters:
+      content-target: true
+  - name: BillingMonitor_html_repo_host
+    parameters:
+      service-key:
+        name: BillingMonitor_html_repo_host-key
+  - name: uaa_BillingMonitor
+    parameters:
+      service-key:
+        name: uaa_BillingMonitor-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: BillingMonitor_BillingMonitor_html_repo_host
+          ServiceInstanceName: BillingMonitor-html5-app-host-service
+          ServiceKeyName: BillingMonitor_html_repo_host-key
+          sap.cloud.service: BillingMonitor
+        - Authentication: OAuth2UserTokenExchange
+          Name: BillingMonitor_uaa_BillingMonitor
+          ServiceInstanceName: BillingMonitor-xsuaa-service
+          ServiceKeyName: uaa_BillingMonitor-key
+          sap.cloud.service: BillingMonitor
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: BillingMonitor_ui_deployer
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: BillingMonitor_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - BillingMonitor-content.zip
+      name: BillingMonitor
+      target-path: resources/
+- name: BillingMonitor
+  type: html5
+  path: BillingMonitor
+  build-parameters:
+    builder: custom
+    commands:
+    - npm install
+    - npm run build
+    supported-platforms: []
+resources:
+- name: BillingMonitor-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      version: 1.0.0
+    service: destination
+    service-name: BillingMonitor-destination-service
+    service-plan: lite
+- name: BillingMonitor_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: BillingMonitor-html5-app-host-service
+    service-plan: app-host
+- name: uaa_BillingMonitor
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: BillingMonitor-xsuaa-service
+    service-plan: application

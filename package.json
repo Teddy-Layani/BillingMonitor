@@ -1,0 +1,19 @@
+{
+  "name": "email-data-dashboard-project",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "@sap/approuter": "^14.4.2",
+    "@sap/html5-repo-mock": "^2.2.1",
+    "@sap/ux-ui5-tooling": "^1.14.0",
+    "@ui5/cli": "^3.0.0",
+    "ui5-task-zipper": "^3.1.0"
+  },
+  "scripts": {
+    "build-BillingMonitor": "cd BillingMonitor && if [ ! -d ${workspaceFolder}/BillingMonitor/BillingMonitor/node_modules/@vue/cli-service ] && [ ! -d ${workspaceFolder}/BillingMonitor/node_modules/@vue/cli-service ]; then npm i; fi && npm run build",
+    "build": "npm run build-BillingMonitor",
+    "deploy": "npm run build && node deploy-with-transport.js",
+    "deploy:mta": "npm run build && mbt build && cf deploy mta_archives/*.mtar",
+    "serve": "ui5 serve --port 8080"
+  }
+}

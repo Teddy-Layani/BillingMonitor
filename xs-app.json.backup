@@ -1,0 +1,26 @@
+{
+  "welcomeFile": "/index.html",
+  "authenticationMethod": "none",
+  "routes": [
+    {
+      "source": "^/GW_SSO/(.*)$",
+      "destination": "GW_SSO",
+      "target": "$1",
+      "authenticationType": "none",
+      "csrfProtection": false
+    },
+    {
+      "source": "^/sap/(.*)$",
+      "destination": "GW_SSO",
+      "target": "/sap/$1",
+      "authenticationType": "none",
+      "csrfProtection": false
+    },
+    {
+      "source": "^(.*)$",
+      "target": "$1",
+      "localDir": "BillingMonitor",
+      "authenticationType": "none"
+    }
+  ]
+}

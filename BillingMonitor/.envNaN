@@ -1,0 +1,1 @@
+destinations=[{"name":"GW_SSO","url":"http://GW_SSO.dest","proxyHost":"http://127.0.0.1","proxyPort":"8887"}]

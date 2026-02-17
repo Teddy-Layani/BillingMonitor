@@ -1,0 +1,16 @@
+/**
+ * src/styles/settings.scss
+ *
+ * Configures SASS variables and Vuetify overwrites
+ */
+
+// https://vuetifyjs.com/features/sass-variables/`
+@use 'vuetify/settings' with (
+  $body-font-family: 'Heebo',
+  $color-pack: false,
+  $tab-slider-size: 3px
+);
+
+.text-title {
+    font-size: 18px !important;
+}
