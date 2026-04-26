@@ -108,22 +108,55 @@
                         <label class="text-body-1 font-weight-bold text-grey-darken-2">תאריכים:</label>
                         <div class="date-filter-container">
                             <button
-                                @click="dateFilter = 'היום'"
-                                :class="['date-filter-btn', { 'active': dateFilter === 'היום' }]"
+                                @click="setDateFilterButton('היום')"
+                                :class="['date-filter-btn', { 'active': dateFilter === 'היום' && !customDateFrom && !customDateTo }]"
                             >
                                 היום
                             </button>
                             <button
-                                @click="dateFilter = 'היום ואתמול'"
-                                :class="['date-filter-btn', { 'active': dateFilter === 'היום ואתמול' }]"
+                                @click="setDateFilterButton('היום ואתמול')"
+                                :class="['date-filter-btn', { 'active': dateFilter === 'היום ואתמול' && !customDateFrom && !customDateTo }]"
                             >
                                 היום ואתמול
                             </button>
                             <button
-                                @click="dateFilter = 'מתחילת החודש'"
-                                :class="['date-filter-btn', { 'active': dateFilter === 'מתחילת החודש' }]"
+                                @click="setDateFilterButton('מתחילת החודש')"
+                                :class="['date-filter-btn', { 'active': dateFilter === 'מתחילת החודש' && !customDateFrom && !customDateTo }]"
                             >
                                 מתחילת החודש
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Date Range -->
+                    <div class="d-flex align-center ga-2">
+                        <label class="text-body-1 font-weight-bold text-grey-darken-2">טווח מותאם:</label>
+                        <div class="d-flex align-center ga-2">
+                            <div class="date-input-wrapper">
+                                <label class="date-input-label">מ-</label>
+                                <input
+                                    type="date"
+                                    v-model="customDateFrom"
+                                    class="date-input"
+                                    :max="customDateTo || undefined"
+                                />
+                            </div>
+                            <div class="date-input-wrapper">
+                                <label class="date-input-label">עד</label>
+                                <input
+                                    type="date"
+                                    v-model="customDateTo"
+                                    class="date-input"
+                                    :min="customDateFrom || undefined"
+                                />
+                            </div>
+                            <button
+                                v-if="customDateFrom || customDateTo"
+                                @click="clearCustomDates"
+                                class="clear-filter-btn"
+                                title="נקה תאריכים"
+                            >
+                                <v-icon size="20">mdi-close</v-icon>
                             </button>
                         </div>
                     </div>
@@ -139,19 +172,69 @@
                             <th class="text-right text-h6 font-weight-bold pa-4">{{ t('repName') }}</th>
                             <th class="text-right text-h6 font-weight-bold pa-4">{{ t('userName') }}</th>
                             <th class="text-right text-h6 font-weight-bold pa-4">{{ t('totalInvoices') }}</th>
+                            <th class="text-right text-h6 font-weight-bold pa-4">{{ t('ccCount') }}</th>
+                            <th class="text-right text-h6 font-weight-bold pa-4">{{ t('ddCount') }}</th>
+                            <th class="text-right text-h6 font-weight-bold pa-4">{{ t('ddBankCount') }}</th>
+                            <th class="text-right text-h6 font-weight-bold pa-4">{{ t('bankTransferCount') }}</th>
+                            <th class="text-right text-h6 font-weight-bold pa-4">{{ t('combinedTotal') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(employee, index) in sortedData" :key="employee.id" :class="getRowColorClass(index)">
+                        <tr v-for="(employee, index) in sortedData" :key="employee.id" :class="getRowColorClass(employee)">
                             <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">{{ index + 1 }}</td>
                             <td class="text-h6 font-weight-medium text-grey-darken-3 pa-4">{{ employee.nameHebrew }}</td>
                             <td class="text-h6 text-grey-darken-2 pa-4">{{ employee.nameEnglish }}</td>
-                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">{{ employee.total }}</td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">
+                                <span
+                                    v-if="employee.total > 0"
+                                    class="count-chip"
+                                    @click="openDialog('invoice', employee)"
+                                >{{ employee.total }}</span>
+                                <span v-else>0</span>
+                            </td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">
+                                <span
+                                    v-if="employee.ccCount > 0"
+                                    class="count-chip"
+                                    @click="openDialog('cc', employee)"
+                                >{{ employee.ccCount }}</span>
+                                <span v-else>0</span>
+                            </td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">
+                                <span
+                                    v-if="employee.ddCount > 0"
+                                    class="count-chip"
+                                    @click="openDialog('dd', employee)"
+                                >{{ employee.ddCount }}</span>
+                                <span v-else>0</span>
+                            </td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">
+                                <span
+                                    v-if="employee.ddBankCount > 0"
+                                    class="count-chip"
+                                    @click="openDialog('ddbank', employee)"
+                                >{{ employee.ddBankCount }}</span>
+                                <span v-else>0</span>
+                            </td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">
+                                <span
+                                    v-if="employee.bankTransferCount > 0"
+                                    class="count-chip"
+                                    @click="openDialog('banktransfer', employee)"
+                                >{{ employee.bankTransferCount }}</span>
+                                <span v-else>0</span>
+                            </td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">{{ getRowSum(employee) }}</td>
                         </tr>
                         <!-- Total Row -->
                         <tr class="total-row">
                             <td colspan="3" class="text-h6 font-weight-bold pa-4">{{ t('total') }}</td>
                             <td class="text-h6 font-weight-bold pa-4">{{ totalSum }}</td>
+                            <td class="text-h6 font-weight-bold pa-4">{{ totalCcCount }}</td>
+                            <td class="text-h6 font-weight-bold pa-4">{{ totalDdCount }}</td>
+                            <td class="text-h6 font-weight-bold pa-4">{{ totalDdBankCount }}</td>
+                            <td class="text-h6 font-weight-bold pa-4">{{ totalBankTransferCount }}</td>
+                            <td class="text-h6 font-weight-bold pa-4">{{ totalCombined }}</td>
                         </tr>
                     </tbody>
                 </v-table>
@@ -172,6 +255,126 @@
                     <span>{{ t('legendBelow') }}</span>
                 </div>
             </div>
+
+            <!-- Detail Dialog -->
+            <v-dialog v-model="dialog.open" max-width="700" scrollable>
+                <v-card>
+                    <v-card-title class="dialog-title d-flex justify-space-between align-center pa-4">
+                        <span>{{ dialogTitle }}</span>
+                        <v-btn icon @click="closeDialog"><v-icon>mdi-close</v-icon></v-btn>
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text class="pa-4">
+                        <div v-if="dialog.loading" class="text-center pa-8">
+                            <v-progress-circular indeterminate size="48" color="primary"></v-progress-circular>
+                        </div>
+                        <template v-else-if="dialog.items.length > 0">
+                            <!-- Invoice table -->
+                            <v-table v-if="dialog.type === 'invoice'" density="compact" class="inner-table">
+                                <thead>
+                                    <tr class="inner-table-header">
+                                        <th class="text-right font-weight-bold pa-3">{{ t('rowNumber') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">{{ t('vkont') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך חשבונית</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, idx) in dialog.items" :key="idx">
+                                        <td class="pa-3">{{ idx + 1 }}</td>
+                                        <td class="pa-3">{{ item.vkont }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.erdat) }}</td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+
+                            <!-- Credit Card table -->
+                            <v-table v-else-if="dialog.type === 'cc'" density="compact" class="inner-table">
+                                <thead>
+                                    <tr class="inner-table-header">
+                                        <th class="text-right font-weight-bold pa-3">{{ t('rowNumber') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">מס' אסמכתא</th>
+                                        <th class="text-right font-weight-bold pa-3">{{ t('vkont') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">סכום</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך חיוב</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, idx) in dialog.items" :key="idx">
+                                        <td class="pa-3">{{ idx + 1 }}</td>
+                                        <td class="pa-3">{{ item.Nrzas }}</td>
+                                        <td class="pa-3">{{ item.Vkont }}</td>
+                                        <td class="pa-3">{{ formatAmount(item.zzamount) }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.Crdat) }}</td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+
+                            <!-- Direct Debit table -->
+                            <v-table v-else-if="dialog.type === 'dd'" density="compact" class="inner-table">
+                                <thead>
+                                    <tr class="inner-table-header">
+                                        <th class="text-right font-weight-bold pa-3">{{ t('rowNumber') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">שותף עסקי</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך חיוב</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, idx) in dialog.items" :key="idx">
+                                        <td class="pa-3">{{ idx + 1 }}</td>
+                                        <td class="pa-3">{{ item.Gpart }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.Crdat) }}</td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+
+                            <!-- DD Bank table -->
+                            <v-table v-else-if="dialog.type === 'ddbank'" density="compact" class="inner-table">
+                                <thead>
+                                    <tr class="inner-table-header">
+                                        <th class="text-right font-weight-bold pa-3">{{ t('rowNumber') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">{{ t('vkont') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך</th>
+                                        <th class="text-right font-weight-bold pa-3">תיאור</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, idx) in dialog.items" :key="idx">
+                                        <td class="pa-3">{{ idx + 1 }}</td>
+                                        <td class="pa-3">{{ item.ContractAccount }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.CreateDate) }}</td>
+                                        <td class="pa-3">{{ item.Description }}</td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+
+                            <!-- Bank Transfer table -->
+                            <v-table v-else-if="dialog.type === 'banktransfer'" density="compact" class="inner-table">
+                                <thead>
+                                    <tr class="inner-table-header">
+                                        <th class="text-right font-weight-bold pa-3">{{ t('rowNumber') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">{{ t('vkont') }}</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך יצירה</th>
+                                        <th class="text-right font-weight-bold pa-3">תיאור</th>
+                                        <th class="text-right font-weight-bold pa-3">סכום</th>
+                                        <th class="text-right font-weight-bold pa-3">תאריך תשלום</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, idx) in dialog.items" :key="idx">
+                                        <td class="pa-3">{{ idx + 1 }}</td>
+                                        <td class="pa-3">{{ item.ContractAccount }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.CreateDate) }}</td>
+                                        <td class="pa-3">{{ item.Description }}</td>
+                                        <td class="pa-3">{{ formatAmount(item.Amount) }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.PaymentDate) }}</td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+                        </template>
+                        <div v-else class="text-center pa-8 text-grey">אין נתונים להצגה</div>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
         </div>
     </div>
 </template>
@@ -190,7 +393,18 @@ const { t } = useI18n();
 // Stores and composables
 const lookupStore = useLookupStore();
 const filterStore = useFilterStore();
-const { fetchTodayBilling, fetchYesterdayBilling, fetchBillingRecords, loading, error } = useBillingData();
+const {
+    fetchTodayBilling,
+    fetchYesterdayBilling,
+    fetchBillingRecords,
+    fetchInvoices,
+    fetchCreditCards,
+    fetchDirectDebits,
+    fetchDdBank,
+    fetchBankTransfers,
+    loading,
+    error
+} = useBillingData();
 const { getTodayDateString, getYesterdayDateString } = useDateFilter();
 
 // Use filter store for persistent state
@@ -207,6 +421,16 @@ const selectedEmployees = computed({
 const dateFilter = computed({
     get: () => filterStore.dateFilter,
     set: (value) => filterStore.setDateFilter(value)
+});
+
+const customDateFrom = computed({
+    get: () => filterStore.customDateFrom,
+    set: (value) => filterStore.setCustomDateFrom(value)
+});
+
+const customDateTo = computed({
+    get: () => filterStore.customDateTo,
+    set: (value) => filterStore.setCustomDateTo(value)
 });
 
 // Local state
@@ -260,20 +484,135 @@ const searchFilteredEmployees = computed(() => {
     );
 });
 
+const getRowSum = (row) => row.total + row.ccCount + row.ddCount + row.ddBankCount + row.bankTransferCount;
+
 const sortedData = computed(() => {
-    return [...data.value].sort((a, b) => b.total - a.total);
+    return [...data.value].sort((a, b) => getRowSum(b) - getRowSum(a));
 });
 
 const totalSum = computed(() => {
     return sortedData.value.reduce((sum, item) => sum + item.total, 0);
 });
 
+const totalCcCount = computed(() => {
+    return sortedData.value.reduce((sum, item) => sum + item.ccCount, 0);
+});
+
+const totalDdCount = computed(() => {
+    return sortedData.value.reduce((sum, item) => sum + item.ddCount, 0);
+});
+
+const totalDdBankCount = computed(() => {
+    return sortedData.value.reduce((sum, item) => sum + item.ddBankCount, 0);
+});
+
+const totalBankTransferCount = computed(() => {
+    return sortedData.value.reduce((sum, item) => sum + item.bankTransferCount, 0);
+});
+
+const totalCombined = computed(() => {
+    return sortedData.value.reduce((sum, item) => sum + getRowSum(item), 0);
+});
+
+// Dialog state
+const dialog = ref({
+    open: false,
+    type: null,
+    employee: null,
+    items: [],
+    loading: false
+});
+
+const dialogTitle = computed(() => {
+    if (!dialog.value.employee) return '';
+    const typeLabels = {
+        invoice: t('totalInvoices'),
+        cc: t('ccCount'),
+        dd: t('ddCount'),
+        ddbank: t('ddBankCount'),
+        banktransfer: t('bankTransferCount')
+    };
+    const label = typeLabels[dialog.value.type] || '';
+    const name = dialog.value.employee.nameHebrew || '';
+    const dateRange = getDateRangeForFilter();
+    let formattedDate = '';
+    if (dateRange.type === 'single') {
+        formattedDate = dateRange.date.split('T')[0];
+    } else if (dateRange.type === 'twodates') {
+        formattedDate = `${dateRange.yesterday.split('T')[0]} — ${dateRange.today.split('T')[0]}`;
+    } else {
+        formattedDate = `${dateRange.from.split('T')[0]} — ${dateRange.to.split('T')[0]}`;
+    }
+    return `${label} — ${name} — ${formattedDate}`;
+});
+
+const openDialog = async (type, employee) => {
+    dialog.value = { open: true, type, employee, items: [], loading: true };
+
+    const dateParam = getDateRangeForFilter();
+
+    let results = [];
+    try {
+        if (type === 'invoice') {
+            const raw = await fetchInvoices(employee.id, dateParam);
+            // Deduplicate by vkont+erdat to keep one row per contract per date
+            const seen = new Map();
+            raw.forEach(item => {
+                const vkont = item.vkont || item.Vkont;
+                const erdat = item.Erdat || item.erdat;
+                if (vkont) {
+                    const key = `${vkont}|${erdat}`;
+                    if (!seen.has(key)) seen.set(key, { vkont, erdat });
+                }
+            });
+            results = Array.from(seen.values());
+        } else if (type === 'cc') {
+            results = await fetchCreditCards(employee.id, dateParam);
+        } else if (type === 'dd') {
+            results = await fetchDirectDebits(employee.id, dateParam);
+        } else if (type === 'ddbank') {
+            results = await fetchDdBank(employee.id, dateParam);
+        } else if (type === 'banktransfer') {
+            results = await fetchBankTransfers(employee.id, dateParam);
+        }
+    } catch (err) {
+        console.error('Error fetching dialog data:', err);
+        results = [];
+    }
+
+    dialog.value.items = results;
+    dialog.value.loading = false;
+};
+
+const closeDialog = () => {
+    dialog.value.open = false;
+    dialog.value.items = [];
+};
+
+// Helper: format SAP /Date(ms)/ to DD/MM/YYYY
+const formatSapDate = (sapDate) => {
+    if (!sapDate) return '';
+    const ms = parseInt(sapDate.replace('/Date(', '').replace(')/', ''));
+    if (isNaN(ms)) return sapDate;
+    const d = new Date(ms);
+    return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+};
+
+// Helper: format numeric amount as ILS currency
+const formatAmount = (val) => {
+    if (val === null || val === undefined || val === '') return '';
+    const num = parseFloat(val);
+    if (isNaN(num)) return val;
+    return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(num);
+};
+
 // Methods
-const getRowColorClass = (index) => {
+const getRowColorClass = (employee) => {
+    const index = sortedData.value.indexOf(employee);
     const length = sortedData.value.length;
-    if (index < 3) return 'bg-green-lighten-4';  // Top 3
-    if (index >= length - 3) return 'bg-red-lighten-3';  // Bottom 3
-    return 'bg-yellow-lighten-4';  // Middle
+    if (index < 3) return 'bg-green-lighten-4';
+    if (index >= length - 3) return 'bg-red-lighten-3';
+    return 'bg-yellow-lighten-4';
 };
 
 const formatDateTime = (date) => {
@@ -349,18 +688,36 @@ const clearEmployees = () => {
     isEmployeeDropdownOpen.value = false;
 };
 
+const setDateFilterButton = (value) => {
+    customDateFrom.value = '';
+    customDateTo.value = '';
+    dateFilter.value = value;
+};
+
+const clearCustomDates = () => {
+    customDateFrom.value = '';
+    customDateTo.value = '';
+    refreshData();
+};
+
 const getDateRangeForFilter = () => {
+    // Custom date range takes priority over buttons
+    if (customDateFrom.value && customDateTo.value) {
+        return { type: 'range', from: customDateFrom.value + 'T00:00:00', to: customDateTo.value + 'T00:00:00' };
+    }
+    if (customDateFrom.value) {
+        return { type: 'single', date: customDateFrom.value + 'T00:00:00' };
+    }
+
     const today = getTodayDateString();
     const yesterday = getYesterdayDateString();
 
     if (dateFilter.value === 'היום') {
-        // Single date: use eq operator
         return { type: 'single', date: today };
     } else if (dateFilter.value === 'היום ואתמול') {
-        // Date range: use ge/le operators
-        return { type: 'range', from: yesterday, to: today };
+        return { type: 'twodates', yesterday: yesterday, today: today };
     } else {
-        // From beginning of month to today: use ge/le operators
+        // מתחילת החודש
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const startDateStr = startOfMonth.toISOString().split('T')[0] + 'T00:00:00';
@@ -369,7 +726,7 @@ const getDateRangeForFilter = () => {
 };
 
 const aggregateBillingByUser = (records) => {
-    // Group by Uname and sum InvoiceCount
+    // Group by Uname and sum InvoiceCount, CcCount, DdCount, DdBankCount, BankTransferCount
     const userMap = new Map();
 
     records.forEach(record => {
@@ -380,13 +737,21 @@ const aggregateBillingByUser = (records) => {
             userMap.set(uname, {
                 uname: uname,
                 invoiceCount: 0,
+                ccCount: 0,
+                ddCount: 0,
+                ddBankCount: 0,
+                bankTransferCount: 0,
                 fullname: record.Fullname || '',
                 orgunit: record.Orgunit || ''
             });
         }
 
-        // Sum the InvoiceCount from each record
-        userMap.get(uname).invoiceCount += (record.InvoiceCount || 0);
+        const user = userMap.get(uname);
+        user.invoiceCount += (record.InvoiceCount || 0);
+        user.ccCount += (record.CcCount || 0);
+        user.ddCount += (record.DdCount || 0);
+        user.ddBankCount += (record.DdBankCount || 0);
+        user.bankTransferCount += (record.BankTransferCount || 0);
     });
 
     // Convert to array and match with user details from store
@@ -398,6 +763,10 @@ const aggregateBillingByUser = (records) => {
             nameHebrew: userDetails?.Fullname || item.fullname || item.uname,
             nameEnglish: item.uname,
             total: item.invoiceCount,
+            ccCount: item.ccCount,
+            ddCount: item.ddCount,
+            ddBankCount: item.ddBankCount,
+            bankTransferCount: item.bankTransferCount,
             orgunit: item.orgunit
         };
     });
@@ -412,22 +781,27 @@ const refreshData = async () => {
         // Fetch data for all selected org units and employees
         const allRecords = [];
 
-        // Prepare date filter for OData
-        const dateFilter = dateRange.type === 'single'
-            ? dateRange.date
-            : { from: dateRange.from, to: dateRange.to };
+        // Prepare date filter for OData (BillingMonitorSet uses its own buildFilterString)
+        let billingDateFilter;
+        if (dateRange.type === 'single') {
+            billingDateFilter = dateRange.date;
+        } else if (dateRange.type === 'twodates') {
+            billingDateFilter = { from: dateRange.yesterday, to: dateRange.today };
+        } else {
+            billingDateFilter = { from: dateRange.from, to: dateRange.to };
+        }
 
         // If employees are selected, use employee filter
         if (selectedEmployees.value.length > 0) {
             // Fetch for each selected employee with date range
             for (const employee of selectedEmployees.value) {
                 try {
-                    const result = await fetchBillingRecords(dateFilter, { uname: employee }, 0, 10000);
+                    const result = await fetchBillingRecords(billingDateFilter, { uname: employee }, 0, 10000);
                     if (result && result.records && Array.isArray(result.records)) {
                         allRecords.push(...result.records);
                     }
                 } catch (err) {
-                    console.error('Error fetching for employee:', employee, err);
+                    if (err.name !== 'AbortError') console.error('Error fetching for employee:', employee, err);
                     // Continue with next iteration
                 }
             }
@@ -435,24 +809,24 @@ const refreshData = async () => {
             // Fetch for each selected org unit with date range
             for (const orgunit of selectedUnits.value) {
                 try {
-                    const result = await fetchBillingRecords(dateFilter, { orgunit: orgunit }, 0, 10000);
+                    const result = await fetchBillingRecords(billingDateFilter, { orgunit: orgunit }, 0, 10000);
                     if (result && result.records && Array.isArray(result.records)) {
                         allRecords.push(...result.records);
                     }
                 } catch (err) {
-                    console.error('Error fetching for orgunit:', orgunit, err);
+                    if (err.name !== 'AbortError') console.error('Error fetching for orgunit:', orgunit, err);
                     // Continue with next iteration
                 }
             }
         } else {
             // No filter selected, fetch all with date range
             try {
-                const result = await fetchBillingRecords(dateFilter, {}, 0, 10000);
+                const result = await fetchBillingRecords(billingDateFilter, {}, 0, 10000);
                 if (result && result.records && Array.isArray(result.records)) {
                     allRecords.push(...result.records);
                 }
             } catch (err) {
-                console.error('Error fetching data:', err);
+                if (err.name !== 'AbortError') console.error('Error fetching data:', err);
             }
         }
 
@@ -460,7 +834,7 @@ const refreshData = async () => {
         data.value = aggregateBillingByUser(allRecords);
         lastUpdate.value = new Date();
     } catch (err) {
-        console.error('Error refreshing data:', err);
+        if (err.name !== 'AbortError') console.error('Error refreshing data:', err);
         // Fallback to empty data
         data.value = [];
     }
@@ -471,14 +845,17 @@ watch([selectedUnits, selectedEmployees, dateFilter], () => {
     refreshData();
 });
 
+watch([customDateFrom, customDateTo], () => {
+    // Only refresh when both dates are set, or when both are cleared
+    if ((customDateFrom.value && customDateTo.value) || (!customDateFrom.value && !customDateTo.value)) {
+        refreshData();
+    }
+});
+
 // Lifecycle
 onMounted(async () => {
     // Restore saved filters first
     filterStore.restore();
-
-    // Clear org unit and employee selections (keep only dateFilter)
-    selectedUnits.value = [];
-    selectedEmployees.value = [];
 
     // Load lookups
     await lookupStore.loadAllLookups();
@@ -808,5 +1185,77 @@ onUnmounted(() => {
     font-size: 16px;
     color: #374151;
     text-align: right;
+}
+
+/* Custom date range inputs */
+.date-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.date-input-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #616161;
+    white-space: nowrap;
+}
+
+.date-input {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s ease;
+    direction: ltr;
+}
+
+.date-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+/* Clickable count chip */
+.count-chip {
+    cursor: pointer;
+    color: #1565c0;
+    font-weight: bold;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.count-chip:hover {
+    color: #0d47a1;
+}
+
+/* Dialog title bar */
+.dialog-title {
+    background-color: #1565c0;
+    color: #ffffff;
+}
+
+.inner-table {
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.inner-table-header {
+    background-color: #1565c0 !important;
+}
+
+.inner-table-header th {
+    color: #ffffff !important;
 }
 </style>

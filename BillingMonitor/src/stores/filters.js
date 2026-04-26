@@ -4,7 +4,9 @@ export const useFilterStore = defineStore('filters', {
     state: () => ({
         selectedUnits: [],
         selectedEmployees: [],
-        dateFilter: 'today'
+        dateFilter: 'today',
+        customDateFrom: '',
+        customDateTo: ''
     }),
 
     actions: {
@@ -23,12 +25,24 @@ export const useFilterStore = defineStore('filters', {
             this.persist();
         },
 
+        setCustomDateFrom(val) {
+            this.customDateFrom = val;
+            this.persist();
+        },
+
+        setCustomDateTo(val) {
+            this.customDateTo = val;
+            this.persist();
+        },
+
         persist() {
             // Save to localStorage
             localStorage.setItem('billingMonitorFilters', JSON.stringify({
                 selectedUnits: this.selectedUnits,
                 selectedEmployees: this.selectedEmployees,
-                dateFilter: this.dateFilter
+                dateFilter: this.dateFilter,
+                customDateFrom: this.customDateFrom,
+                customDateTo: this.customDateTo
             }));
         },
 
@@ -41,6 +55,8 @@ export const useFilterStore = defineStore('filters', {
                     this.selectedUnits = data.selectedUnits || [];
                     this.selectedEmployees = data.selectedEmployees || [];
                     this.dateFilter = data.dateFilter || 'today';
+                    this.customDateFrom = data.customDateFrom || '';
+                    this.customDateTo = data.customDateTo || '';
                 } catch (err) {
                     console.error('Error restoring filters:', err);
                 }
@@ -51,6 +67,8 @@ export const useFilterStore = defineStore('filters', {
             this.selectedUnits = [];
             this.selectedEmployees = [];
             this.dateFilter = 'today';
+            this.customDateFrom = '';
+            this.customDateTo = '';
             localStorage.removeItem('billingMonitorFilters');
         }
     }

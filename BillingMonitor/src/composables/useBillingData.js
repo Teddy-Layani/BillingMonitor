@@ -142,6 +142,141 @@ export function useBillingData() {
     };
 
     /**
+     * Build OData filter string for detail endpoints (InvoiceSet, CreditCardSet, etc.)
+     * date param is an object with type: 'single' | 'twodates' | 'range'
+     */
+    const buildDetailFilterString = (userField, dateField, uname, date) => {
+        if (date.type === 'single') {
+            return `${userField} eq '${uname}' and ${dateField} eq datetime'${date.date}'`;
+        } else if (date.type === 'twodates') {
+            return `${userField} eq '${uname}' and (${dateField} eq datetime'${date.yesterday}' or ${dateField} eq datetime'${date.today}')`;
+        } else {
+            // range
+            return `${userField} eq '${uname}' and (${dateField} ge datetime'${date.from}' and ${dateField} le datetime'${date.to}')`;
+        }
+    };
+
+    /**
+     * Fetch invoice details for a specific user and date
+     */
+    const fetchInvoices = async (uname, date) => {
+        try {
+            const filterString = buildDetailFilterString('Ernam', 'Erdat', uname, date);
+
+            const response = await fetch(
+                `${serviceEndpoint}InvoiceSet?$filter=${encodeURIComponent(filterString)}&$format=json`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.d?.results || data.value || [];
+        } catch (err) {
+            console.error('Error fetching invoices:', err);
+            return [];
+        }
+    };
+
+    /**
+     * Fetch credit card details for a specific user and date
+     */
+    const fetchCreditCards = async (uname, date) => {
+        try {
+            const filterString = buildDetailFilterString('Ernam', 'Crdat', uname, date);
+
+            const response = await fetch(
+                `${serviceEndpoint}CreditCardSet?$filter=${encodeURIComponent(filterString)}&$format=json&$inlinecount=allpages`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.d?.results || data.value || [];
+        } catch (err) {
+            console.error('Error fetching credit cards:', err);
+            return [];
+        }
+    };
+
+    /**
+     * Fetch direct debit details for a specific user and date
+     */
+    const fetchDirectDebits = async (uname, date) => {
+        try {
+            const filterString = buildDetailFilterString('Ernam', 'Crdat', uname, date);
+
+            const response = await fetch(
+                `${serviceEndpoint}DirectDebitSet?$filter=${encodeURIComponent(filterString)}&$format=json&$inlinecount=allpages`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.d?.results || data.value || [];
+        } catch (err) {
+            console.error('Error fetching direct debits:', err);
+            return [];
+        }
+    };
+
+    /**
+     * Fetch DD bank details for a specific user and date
+     */
+    const fetchDdBank = async (uname, date) => {
+        try {
+            const filterString = buildDetailFilterString('Uname', 'CreateDate', uname, date);
+
+            const response = await fetch(
+                `${serviceEndpoint}DdBankSet?$filter=${encodeURIComponent(filterString)}&$format=json&$inlinecount=allpages`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.d?.results || data.value || [];
+        } catch (err) {
+            console.error('Error fetching DD bank records:', err);
+            return [];
+        }
+    };
+
+    /**
+     * Fetch bank transfer details for a specific user and date
+     */
+    const fetchBankTransfers = async (uname, date) => {
+        try {
+            const filterString = buildDetailFilterString('Uname', 'CreateDate', uname, date);
+
+            const response = await fetch(
+                `${serviceEndpoint}BankTransferSet?$filter=${encodeURIComponent(filterString)}&$format=json&$inlinecount=allpages`,
+                { credentials: 'include' }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.d?.results || data.value || [];
+        } catch (err) {
+            console.error('Error fetching bank transfers:', err);
+            return [];
+        }
+    };
+
+    /**
      * Abort any ongoing fetch
      */
     const abortFetch = () => {
@@ -160,6 +295,11 @@ export function useBillingData() {
         fetchBillingCount,
         fetchTodayBilling,
         fetchYesterdayBilling,
+        fetchInvoices,
+        fetchCreditCards,
+        fetchDirectDebits,
+        fetchDdBank,
+        fetchBankTransfers,
         abortFetch
     };
 }

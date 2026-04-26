@@ -28,7 +28,15 @@ const i18n = {
     repName: 'שם נציג',
     userName: 'שם משתמש',
     totalInvoices: 'סה"כ רישום חשבוניות במייל',
+    ccCount: 'תשלומים באשראי',
+    ddCount: 'תשלומי הו"ק באשראי',
+    ddBankCount: 'הו"ק בנקאית',
+    bankTransferCount: 'העברה בנקאית',
+    combinedTotal: 'סה"כ משולב',
     total: 'סה"כ',
+    vkont: 'חשבון חוזה',
+    invoiceDetails: 'פרטי חשבוניות',
+    loadingInvoices: 'טוען חשבוניות...',
 
     // Legend
     legendAbove: 'למעלה מ-3%',
@@ -76,7 +84,15 @@ const i18n_iw = {
     repName: 'שם נציג',
     userName: 'שם משתמש',
     totalInvoices: 'סה"כ רישום חשבוניות במייל',
+    ccCount: 'תשלומים באשראי',
+    ddCount: 'תשלומי הו"ק באשראי',
+    ddBankCount: 'הו"ק בנקאית',
+    bankTransferCount: 'העברה בנקאית',
+    combinedTotal: 'סה"כ משולב',
     total: 'סה"כ',
+    vkont: 'חשבון חוזה',
+    invoiceDetails: 'פרטי חשבוניות',
+    loadingInvoices: 'טוען חשבוניות...',
 
     // Legend
     legendAbove: 'למעלה מ-3%',
