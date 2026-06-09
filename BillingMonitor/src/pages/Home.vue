@@ -224,7 +224,7 @@
                                 >{{ employee.bankTransferCount }}</span>
                                 <span v-else>0</span>
                             </td>
-                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">{{ getRowSum(employee) }}</td>
+                            <td class="text-h6 font-weight-bold text-grey-darken-3 pa-4">{{ employee.uniqueTotal }}</td>
                         </tr>
                         <!-- Total Row -->
                         <tr class="total-row">
@@ -240,7 +240,8 @@
                 </v-table>
             </v-card>
 
-            <!-- Legend -->
+            <!-- Legend (hidden per Khaled's request - 2026-06-09) -->
+            <!--
             <div class="mt-6 d-flex justify-center ga-6 text-body-1">
                 <div class="d-flex align-center">
                     <div class="legend-box bg-green-lighten-4 ml-2"></div>
@@ -255,6 +256,7 @@
                     <span>{{ t('legendBelow') }}</span>
                 </div>
             </div>
+            -->
 
             <!-- Detail Dialog -->
             <v-dialog v-model="dialog.open" max-width="700" scrollable>
@@ -484,10 +486,8 @@ const searchFilteredEmployees = computed(() => {
     );
 });
 
-const getRowSum = (row) => row.total + row.ccCount + row.ddCount + row.ddBankCount + row.bankTransferCount;
-
 const sortedData = computed(() => {
-    return [...data.value].sort((a, b) => getRowSum(b) - getRowSum(a));
+    return [...data.value].sort((a, b) => b.uniqueTotal - a.uniqueTotal);
 });
 
 const totalSum = computed(() => {
@@ -511,7 +511,7 @@ const totalBankTransferCount = computed(() => {
 });
 
 const totalCombined = computed(() => {
-    return sortedData.value.reduce((sum, item) => sum + getRowSum(item), 0);
+    return sortedData.value.reduce((sum, item) => sum + item.uniqueTotal, 0);
 });
 
 // Dialog state
@@ -741,6 +741,7 @@ const aggregateBillingByUser = (records) => {
                 ddCount: 0,
                 ddBankCount: 0,
                 bankTransferCount: 0,
+                uniqueTotal: 0,
                 fullname: record.Fullname || '',
                 orgunit: record.Orgunit || ''
             });
@@ -752,6 +753,7 @@ const aggregateBillingByUser = (records) => {
         user.ddCount += (record.DdCount || 0);
         user.ddBankCount += (record.DdBankCount || 0);
         user.bankTransferCount += (record.BankTransferCount || 0);
+        user.uniqueTotal += (record.UniqueTotal || 0);
     });
 
     // Convert to array and match with user details from store
@@ -767,6 +769,7 @@ const aggregateBillingByUser = (records) => {
             ddCount: item.ddCount,
             ddBankCount: item.ddBankCount,
             bankTransferCount: item.bankTransferCount,
+            uniqueTotal: item.uniqueTotal,
             orgunit: item.orgunit
         };
     });
