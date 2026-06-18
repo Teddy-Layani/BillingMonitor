@@ -25,6 +25,7 @@ export default defineConfig({
         // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
         Vuetify({
             autoImport: true,
+            
             styles: {
                 configFile: 'src/styles/settings.scss'
             }
@@ -78,10 +79,11 @@ export default defineConfig({
         port: 3000,
         proxy: {
             '/GW_SSO': {
-                target: 'https://port6004-workspaces-ws-7romf.eu20.applicationstudio.cloud.sap/',
+                target: 'https://port6004-workspaces-ws-76w5d.eu20.applicationstudio.cloud.sap/',
                 changeOrigin: true,
                 secure: false,
                 agent: new HttpsProxyAgent('http://127.0.0.1:8887')
+               
             }
         }
     },

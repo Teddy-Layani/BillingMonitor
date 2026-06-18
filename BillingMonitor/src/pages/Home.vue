@@ -554,18 +554,8 @@ const openDialog = async (type, employee) => {
     let results = [];
     try {
         if (type === 'invoice') {
-            const raw = await fetchInvoices(employee.id, dateParam);
-            // Deduplicate by vkont+erdat to keep one row per contract per date
-            const seen = new Map();
-            raw.forEach(item => {
-                const vkont = item.vkont || item.Vkont;
-                const erdat = item.Erdat || item.erdat;
-                if (vkont) {
-                    const key = `${vkont}|${erdat}`;
-                    if (!seen.has(key)) seen.set(key, { vkont, erdat });
-                }
-            });
-            results = Array.from(seen.values());
+           
+            results = await fetchInvoices(employee.id, dateParam);
         } else if (type === 'cc') {
             results = await fetchCreditCards(employee.id, dateParam);
         } else if (type === 'dd') {
