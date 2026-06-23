@@ -284,7 +284,7 @@
                                     <tr v-for="(item, idx) in dialog.items" :key="idx">
                                         <td class="pa-3">{{ idx + 1 }}</td>
                                         <td class="pa-3">{{ item.vkont }}</td>
-                                        <td class="pa-3">{{ formatSapDate(item.erdat) }}</td>
+                                        <td class="pa-3">{{ formatSapDate(item.Erdat) }}</td>
                                     </tr>
                                 </tbody>
                             </v-table>
