@@ -6,9 +6,9 @@
                 <!-- Top row: Logo + Countdown top-left -->
                 <div class="d-flex justify-space-between align-start mb-4">
                     <div class="d-flex flex-column align-start">
-                        <img v-if="logo" :src="logo" alt="Logo" style="height: 64px; width: auto;" />
+                        <img v-if="logo" :src="logo" alt="Logo" style="height: 150px; width: auto;" />
                         <div v-else class="text-h6 font-weight-bold" style="color: #ff6b1a;">{{ t('companyName') }}</div>
-                        <p class="text-blue-darken-4 text-body-2 font-weight-bold mt-1">{{ t('department') }}</p>
+                      <p class="text-blue-darken-4 text-body-2 font-weight-bold" style="margin-top: -40px;">{{ t('department') }}</p>
                     </div>
                     <div class="text-body-2 text-grey-darken-1">
                         {{ t('refreshIn') }} <span class="font-weight-bold">{{ countdown }}s</span>
